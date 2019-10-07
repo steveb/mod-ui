@@ -1722,7 +1722,10 @@ class Host(object):
                 else:
                     title = name.split(":",1)[-1].title()
                 title = title.replace(" ","_")
-                websocket.write_message("add_hw_port /graph/%s midi 0 %s %i" % (name.split(":",1)[-1], title, i+1))
+                websocket.write_message("add_hw_port /graph/%s midi 0 %s %i" % (name.split(":",1)[-1], title, i+2))
+
+        # Zynthian Router 
+        websocket.write_message("add_hw_port /graph/zynthian_main_out midi 0 Zynthian_Main_Out 1")
 
         # MIDI Out
         if self.midi_aggregated_mode:
@@ -1744,7 +1747,10 @@ class Host(object):
                 else:
                     title = name.split(":",1)[-1].title()
                 title = title.replace(" ","_")
-                websocket.write_message("add_hw_port /graph/%s midi 1 %s %i" % (name.split(":",1)[-1], title, i+1))
+                websocket.write_message("add_hw_port /graph/%s midi 1 %s %i" % (name.split(":",1)[-1], title, i+2))
+
+        # Zynthian Router 
+        websocket.write_message("add_hw_port /graph/zynthian_main_in midi 1 Zynthian_Main_In 1")
 
         rinstances = {
             PEDALBOARD_INSTANCE_ID: PEDALBOARD_INSTANCE
@@ -2749,11 +2755,16 @@ class Host(object):
             if data[2] == "cv_exp_pedal":
                 return "mod-spi2jack:exp_pedal"
 
-            #Zynthian input monitors:
+            # Zynthian ports: ---------------------------
+            # Input Monitors => Audio routed from Zynthian Layer
             if data[2].startswith("monitor_out_"):
                 num = data[2].replace("monitor_out_","",1)
                 return "mod-monitor:out_%s" % num
-            #------------------------
+            # ZynMidiRouter => MIDI routed to/from Zynthian
+            if data[2].startswith("zynthian_"):
+                subport = data[2].replace("zynthian_","",1)
+                return "ZynMidiRouter:%s" % subport
+            # -------------------------------------------
 
             # Default guess
             return "system:%s" % data[2]
